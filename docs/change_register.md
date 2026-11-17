@@ -1,6 +1,8 @@
 # CASTADOO Change Register
 
-**Target:** `odoo/odoo` tip `9c58cae5d6e3cf91ac1cca7df39fb21f68ca6e15` (branch 17.0)
+**Target:** `odoo/odoo` tip `9c58cae5d6e3cf91ac1cca7df39fb21f68ca6e15` (branch 17.0) at
+measurement, re-verified against `e57daa52dd19556990fb03f767dfcf516a24feec`, the tip the
+fork's `17.0` mirror is cut from
 **Measured:** 2026-11-16, verified 2026-11-17, via `git grep` against the real 17.0 tree (40,111 files)
 **Purpose:** enumerate every file and line in the six named surfaces, with the replacement
 mechanism, so the scope boundary can be decided on evidence instead of on a file count.

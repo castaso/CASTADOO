@@ -5,8 +5,13 @@
 *   **Date:** 2026-11-17
 
 *Convention: the present tense in this document describes the intended end state. Of that
-state, only this document, the register it cites and the review trail exist so far — there is
-no fork, no `17.0` mirror branch, no `castadoo/17.0` overlay branch and no CI file.*
+state, this document, the register it cites and the review trail, the fork
+`castaso/CASTADOO` (a true fork of `odoo/odoo`), its `17.0` mirror branch and its
+`castadoo/17.0` overlay branch all exist. The mirror is byte-identical to upstream at
+`e57daa52`. Nothing else in the plan is built yet: no `castadoo/` addon tree, no
+`.gitattributes` (item 1b), no gates and no CI file. Citations here were measured at
+`9c58cae5` and re-verified at `e57daa52`; the three upstream commits in between touch no
+path this design names.*
 
 --------------------------------------------------------------------------------
 
