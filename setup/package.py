@@ -320,7 +320,7 @@ class DockerDeb(Docker):
         # Generate new debian/changelog
         # - Append timestamp to version for the .dsc to refer the right .tar.gz
         # - Write the date into the email line so SOURCE_DATE_EPOCH is set correctly from it
-        changelog = fr"odoo ({VERSION}.{TSTAMP}) stable; urgency=low\n\n  * {VERSION}\n\n -- Odoo Bot <info@odoo.com>  {TFULL}\n"
+        changelog = fr"odoo ({VERSION}.{TSTAMP}) stable; urgency=low\n\n  * {VERSION}\n\n -- CASTASOFT <info@castasoft.yukreasi.id>  {TFULL}\n"
         cmds = ["sed -i '1i %s' debian/changelog" % changelog]
         cmds.append('dpkg-buildpackage -rfakeroot -uc -us -tc')
         # As the packages are built in the parent of the buildir, we move them back to build_dir

@@ -1,0 +1,36 @@
+# CASTADOO: replaced branding binaries.
+#
+# These paths are upstream blobs this fork overwrites at the same path. When
+# upstream also changes one, git reports CONFLICT (content) with no hunk-level
+# resolution, and "take ours" silently discards the upstream change while looking
+# identical in review. merge=ours suppresses that whole-file conflict so the
+# resolution is deliberate rather than mechanical.
+#
+# It is a noise suppressor, NOT a licence to skip the read: the sync procedure
+# requires reading the upstream change before taking the fork's blob.
+#
+# The three replaced SVGs (odoo_logo.svg, odoo_logo_dark.svg, odoo-icon.svg)
+# are listed individually rather than by wildcard, and they DO take merge=ours.
+# An earlier version of this file argued the opposite - that git diffs them
+# line by line, so merge=ours would silently discard upstream edits inside the
+# file. That reasoning was overruled: these three are wholly regenerated output
+# of castadoo/assets/build_assets.mjs, so there is no upstream edit inside them
+# worth keeping. Taking ours is the correct resolution, and making it automatic
+# turns a hand-resolved whole-file conflict into no conflict at all. The warning
+# still applies to the READ: read the upstream change before taking the blob.
+#
+# A wildcard would be wrong here: addons/web/static/img/ holds many SVGs this
+# fork does not touch, and merge=ours on those would discard real upstream art.
+#
+# merge=ours needs the driver defined or git falls back to a normal merge without
+# saying so. One repo-local line supplies it, and the deployment checklist states
+# it:  git config merge.ours.driver true
+
+addons/web/static/img/*.png        merge=ours
+addons/web/static/img/*.ico        merge=ours
+addons/web/static/img/*.jpg        merge=ours
+addons/web/static/img/odoo-icon.svg      merge=ours
+addons/web/static/img/odoo_logo.svg      merge=ours
+addons/web/static/img/odoo_logo_dark.svg merge=ours
+setup/win32/static/pixmaps/*.ico   merge=ours
+setup/win32/static/pixmaps/*.bmp   merge=ours

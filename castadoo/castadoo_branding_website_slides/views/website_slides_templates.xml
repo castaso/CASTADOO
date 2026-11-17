@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 21. One parent: website_slides.mail_notification_channel_invite,
+         declared at addons/website_slides/data/mail_templates.xml:5; the footer
+         is at :69.
+
+         The colour here is a hardcoded style="color: #875A7B;" rather than a
+         t-att-style expression, so unlike item 9 it must be replaced in the
+         markup. Setting res.company.email_secondary_color does not reach it. -->
+    <template id="castadoo_channel_invite_footer"
+              name="CASTADOO: channel invitation footer"
+              inherit_id="website_slides.mail_notification_channel_invite">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" style="color: #303188;">CASTADOO</a>
+        </xpath>
+    </template>
+
+</odoo>

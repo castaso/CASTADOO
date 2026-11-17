@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 4. The offline page served by the service worker at /web/offline.
+         Parent is web.webclient_offline, declared at
+         addons/web/views/webclient_templates.xml:285.
+
+         Note on staleness: because the worker is served verbatim from
+         web/static/src/service_worker.js and that file is byte-identical after
+         this change, a browser that already installed the worker keeps serving
+         its cached copy of this page until the worker itself changes. The blast
+         radius is the offline page, shown only while the device is offline.
+         That trade was accepted deliberately; see "Cache versioning" in the
+         design. -->
+
+    <!-- Accessible name of the mark. src is untouched: odoo-icon is inlined as
+         a base64 data URI from a controller, so the replacement is a blob swap
+         (item 26), not a path edit. -->
+    <template id="castadoo_offline_logo" name="CASTADOO: offline page logo"
+              inherit_id="web.webclient_offline">
+        <xpath expr="//div[@class='card']/img" position="attributes">
+            <attribute name="alt">CASTADOO</attribute>
+        </xpath>
+    </template>
+
+    <!-- The body copy. Replaced rather than patched because "Odoo" sits in the
+         middle of the sentence; there is no node to retarget. -->
+    <template id="castadoo_offline_text" name="CASTADOO: offline page copy"
+              inherit_id="web.webclient_offline">
+        <xpath expr="//div[@class='card']/p" position="replace">
+            <p>Check your network connection and come back here. The app will load as soon as you're back online.</p>
+        </xpath>
+    </template>
+
+    <!-- The call-to-action colour. This is the fragile one, so the mechanism is
+         fixed rather than left to the implementer: APPEND a rule after the
+         existing <style> block instead of replacing its contents.
+         Replacing the block would be self-contained but would break silently on
+         any upstream CSS edit inside those 34 lines (293-326); an appended rule
+         survives upstream reordering, and fails visibly if the selector changes.
+         It is also the only one of the two strategies a computed-style assertion
+         can distinguish, which is why the Tier A test reads getComputedStyle
+         rather than the stylesheet source.
+
+         Stock declarations being overridden: background-color: #714B67 at :317,
+         border: 1px solid #714B67 at :319. -->
+    <template id="castadoo_offline_button_color" name="CASTADOO: offline page button colour"
+              inherit_id="web.webclient_offline">
+        <xpath expr="//style" position="after">
+            <style>
+                .card button {
+                    background-color: #303188;
+                    border: 1px solid #303188;
+                }
+            </style>
+        </xpath>
+    </template>
+
+</odoo>

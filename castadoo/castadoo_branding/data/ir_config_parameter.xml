@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- The PWA manifest name. webmanifest.py:48 reads this with a stock
+         fallback of 'Odoo', so on a fresh database a correctly branded tree
+         would still serve a manifest named Odoo. That is the surface CUJ 4
+         asserts, and no deployment step can be assumed to set it, which is why
+         it is the one configuration value seeded as module data.
+
+         noupdate + forcecreate="0" is the stock idiom for "create it once,
+         never overwrite it again", so an operator who deliberately changes the
+         value keeps it across module updates. -->
+
+    <record id="web_app_name" model="ir.config_parameter" forcecreate="0">
+        <field name="key">web.web_app_name</field>
+        <field name="value">CASTADOO</field>
+    </record>
+
+</odoo>

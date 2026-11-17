@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 15. Two different parents, one file: both are QWeb, so one file can
+         carry both records.
+
+           im_livechat.livechat_email_template
+               addons/im_livechat/data/mail_templates.xml:91 - footer, and it
+               hardcodes style="color: #875A7B;" inline, so the colour is replaced
+               in markup here (the company field does not reach it).
+
+           im_livechat.support_page
+               addons/im_livechat/views/im_livechat_channel_templates.xml:79 -
+               a web page, text only, no colour. -->
+
+    <template id="castadoo_livechat_email_footer"
+              name="CASTADOO: live chat invitation footer"
+              inherit_id="im_livechat.livechat_email_template">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" style="color: #303188;">CASTADOO</a>
+        </xpath>
+    </template>
+
+    <template id="castadoo_livechat_support_page"
+              name="CASTADOO: live chat support page"
+              inherit_id="im_livechat.support_page">
+        <!-- Anchored on the <strong> child, not on contains(., ...): that
+             function is true for every ancestor of the matching text node as
+             well, so it resolves to more than one node and install fails. -->
+        <xpath expr="//div[@class='main']/div[strong]" position="replace">
+            <div>Website Live Chat powered by <strong>CASTADOO</strong>.</div>
+        </xpath>
+    </template>
+
+</odoo>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 3. Base-tier web client surfaces.
+         Every anchor here was measured against 17.0 tip e57daa52. External ids
+         are the ones the tree actually declares: web.layout is declared with
+         id="web.layout" at webclient_templates.xml:17 (not id="layout"), so
+         inheriting "web.web_layout" would raise External ID not found. -->
+
+    <!-- Browser tab title fallback. web.layout is the common parent: the
+         webclient, the login page and the offline page all t-call it, so this
+         one record reaches all three. -->
+    <template id="castadoo_layout_title" name="CASTADOO: page title fallback"
+              inherit_id="web.layout">
+        <xpath expr="//title" position="attributes">
+            <attribute name="t-esc">title or 'CASTADOO'</attribute>
+        </xpath>
+    </template>
+
+    <!-- The "Powered by" badge shown on public pages and the portal footer.
+         The <img> keeps its src: odoo_logo_tiny.png is replaced in place
+         (item 26), so the filename is never shown to a user and no path edit is
+         needed. Only the accessible name changes, plus the link target, which
+         must not point at odoo.com. -->
+    <template id="castadoo_brand_promotion" name="CASTADOO: brand promotion badge"
+              inherit_id="web.brand_promotion_message">
+        <xpath expr="//t[@t-set='odoo_logo']/a" position="attributes">
+            <attribute name="t-attf-href">https://castasoft.yukreasi.id?utm_source=db&amp;utm_medium=#{_utm_medium}</attribute>
+        </xpath>
+        <xpath expr="//t[@t-set='odoo_logo']/a/img" position="attributes">
+            <attribute name="alt">CASTADOO</attribute>
+        </xpath>
+    </template>
+
+    <!-- Login footer. The anchor is replaced wholesale rather than having its
+         text set, because "Powered by <span>Odoo</span>" is three nodes and the
+         design's decision is that the footer reads CASTADOO alone. Anchored on
+         the href so that an upstream rewrite of the markup fails loudly at
+         install instead of silently leaving an Odoo link in place. -->
+    <template id="castadoo_login_footer" name="CASTADOO: login footer"
+              inherit_id="web.login_layout">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a href="https://castasoft.yukreasi.id" target="_blank">CASTADOO</a>
+        </xpath>
+    </template>
+
+    <!-- The mobile browser chrome colour. Stock is #71639e, a third purple
+         inconsistent with the brand #714B67; replacing it with the CASTASOFT
+         navy resolves that inconsistency rather than reproducing it. -->
+    <template id="castadoo_theme_color" name="CASTADOO: theme-color meta"
+              inherit_id="web.webclient_bootstrap">
+        <xpath expr="//meta[@name='theme-color']" position="attributes">
+            <attribute name="content">#303188</attribute>
+        </xpath>
+    </template>
+
+</odoo>

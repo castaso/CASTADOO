@@ -1,37 +1,60 @@
-# Odoo
+# CASTADOO
 
-[![Build Status](https://runbot.odoo.com/runbot/badge/flat/1/master.svg)](https://runbot.odoo.com/runbot)
-[![Documentation](https://img.shields.io/badge/master-docs-875A7B.svg?style=flat&colorA=8F8F8F)](https://www.odoo.com/documentation/17.0)
-[![Help](https://img.shields.io/badge/master-help-875A7B.svg?style=flat&colorA=8F8F8F)](https://www.odoo.com/forum/help-1)
-[![Nightly Builds](https://img.shields.io/badge/master-nightly-875A7B.svg?style=flat&colorA=8F8F8F)](https://nightly.odoo.com/)
+CASTADOO is a rebranded distribution of [Odoo 17.0](https://github.com/odoo/odoo/tree/17.0),
+maintained by CASTASOFT. It is the same ERP and business-app suite, with the user-visible
+branding replaced: the web client and login page, notification e-mail footers, PDF report
+metadata, the Windows installer, the progressive-web-app manifest and the offline page.
 
-Odoo is a suite of web based open source business apps.
+Upstream <https://castasoft.yukreasi.id>
 
-The main Odoo Apps include an [Open Source CRM](https://www.odoo.com/page/crm),
-[Website Builder](https://www.odoo.com/app/website),
-[eCommerce](https://www.odoo.com/app/ecommerce),
-[Warehouse Management](https://www.odoo.com/app/inventory),
-[Project Management](https://www.odoo.com/app/project),
-[Billing &amp; Accounting](https://www.odoo.com/app/accounting),
-[Point of Sale](https://www.odoo.com/app/point-of-sale-shop),
-[Human Resources](https://www.odoo.com/app/employees),
-[Marketing](https://www.odoo.com/app/social-marketing),
-[Manufacturing](https://www.odoo.com/app/manufacturing),
-[...](https://www.odoo.com/)
+## What this repository is
 
-Odoo Apps can be used as stand-alone applications, but they also integrate seamlessly so you get
-a full-featured [Open Source ERP](https://www.odoo.com) when you install several Apps.
+A **fork of Odoo 17.0**, not a set of patches on top of a published package. Two branches
+matter, and they are not interchangeable:
 
-## Getting started with Odoo
+| Branch | Contents | Rule |
+|---|---|---|
+| `17.0` | a byte-for-byte mirror of `odoo/odoo` 17.0 | **never edited** |
+| `castadoo/17.0` | the default branch; the rebrand overlay | all work happens here |
 
-For a standard installation please follow the [Setup instructions](https://www.odoo.com/documentation/17.0/administration/install/install.html)
-from the documentation.
+`17.0` exists so that syncing an upstream point release is a fast-forward, and so that
+"is this tree still pristine?" is a single commit comparison. The overlay is small on
+purpose: a handful of in-place string edits, one new addon tree under `castadoo/`, and
+the documentation in `docs/`. If you are contributing or deploying, branch from
+`castadoo/17.0`.
 
-To learn the software, we recommend the [Odoo eLearning](https://www.odoo.com/slides),
-or [Scale-up, the business game](https://www.odoo.com/page/scale-up-business-game).
-Developers can start with [the developer tutorials](https://www.odoo.com/documentation/17.0/developer/howtos.html).
+The rebrand is implemented as addons wherever an addon can reach the surface, because an
+addon does not create upstream conflict surface. Only the surfaces that an addon cannot
+reach — the Windows installer, the PWA manifest controller, the database manager, the
+release metadata — are edited in place.
+
+## Getting started
+
+Standard Odoo installation applies; the deployment notes in `docs/` add one requirement:
+`<repo>/castadoo` must appear in `addons_path`, before the upstream addons, or the
+branding addons are invisible and the rebrand silently does not apply.
+
+Odoo 17.0 requires **Python 3.10** and a PostgreSQL server. Upstream's own installation,
+developer and API documentation is the reference for everything except the branding
+itself, and it is kept because it describes the software this fork actually is.
+
+## Licensing
+
+CASTADOO is distributed under the **GNU Lesser General Public License, version 3**, the
+same licence as upstream Odoo, and that licence is unchanged by this fork. See `LICENSE`.
+
+Copyright in the original work remains with Odoo S.A. and the many third-party
+contributors; see `COPYRIGHT`. CASTASOFT's changes are additionally copyright CASTASOFT.
+Renaming does not transfer copyright, and nothing in this repository should be read as
+claiming it.
+
+Because the licence is unchanged and the work is a modified version, the modified source
+is published here in full, at the same paths as upstream wherever a file was edited.
 
 ## Security
 
-If you believe you have found a security issue, check our [Responsible Disclosure page](https://www.odoo.com/security-report)
-for details and get in touch with us via email.
+Security issues in Odoo itself should go to upstream through the responsible-disclosure
+process described in `SECURITY.md`, which is upstream's own file, kept verbatim: this fork
+does not have the resources to triage the upstream codebase, and forwarding them there is
+faster for everyone. Issues in the CASTADOO additions — the addons under `castadoo/`, the
+installer edits, the deployment notes — should go to CASTASOFT.

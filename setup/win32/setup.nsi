@@ -1,4 +1,9 @@
 ﻿# Part of Odoo. See LICENSE file for full copyright and licensing details.
+#
+# CASTADOO fork: branding edits only. Every replacement below is a user-visible
+# string; the frozen identifiers (SERVICENAME, UNINSTALL_REGISTRY_KEY_SERVER,
+# DEFAULT_ODOO_DB_USERNAME, PostgreSQL_For_Odoo, odoo.conf and the $TextOdoo*
+# variables) are left alone deliberately, each with a reason at its site.
 
 # TODO: Avoid to uninstall the database
 # TODO: We can update the server or the clients without to uninstall the all-in-one
@@ -41,7 +46,7 @@ Unicode True
     Exch $R2
 !macroend
 
-!define PUBLISHER 'Odoo S.A.'
+!define PUBLISHER 'CASTASOFT'
 
 !ifndef MAJOR_VERSION
     !define MAJOR_VERSION '15'
@@ -71,15 +76,30 @@ Unicode True
 	!define TOOLSDIR 'c:\odoobuild'
 !endif
 
-!define PRODUCT_NAME "Odoo"
+!define PRODUCT_NAME "CASTADOO"
 !define DISPLAY_NAME "${PRODUCT_NAME} ${MAJOR_VERSION}.${MINOR_VERSION}"
 
 !define UNINSTALL_BASE_REGISTRY_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall"
 !define UNINSTALL_REGISTRY_KEY "${UNINSTALL_BASE_REGISTRY_KEY}\${DISPLAY_NAME}"
 
+# FROZEN - deliberately still says Odoo. This is an identity string, not a
+# display string: the Uninstall section uses it to chain-uninstall a prior
+# server install, which registered itself under this exact key. Renaming it
+# would orphan that install. The trap is that it does not reference
+# ${PRODUCT_NAME}, so a search-and-replace over this file misses it silently.
 !define UNINSTALL_REGISTRY_KEY_SERVER "${UNINSTALL_BASE_REGISTRY_KEY}\Odoo Server ${VERSION}"
 
 !define REGISTRY_KEY "SOFTWARE\${DISPLAY_NAME}"
+
+# Pre-rebrand identity, READ-ONLY. PRODUCT_NAME feeds DISPLAY_NAME, which
+# feeds the Add/Remove key and REGISTRY_KEY, so renaming the product moves
+# this installer's registry identity. These two exist so .onInit can still
+# find an install created by a pre-rebrand build in the same release that
+# writes the new key. Nothing writes these; they are only read.
+!define LEGACY_PRODUCT_NAME "Odoo"
+!define LEGACY_DISPLAY_NAME "${LEGACY_PRODUCT_NAME} ${MAJOR_VERSION}.${MINOR_VERSION}"
+!define LEGACY_REGISTRY_KEY "SOFTWARE\${LEGACY_DISPLAY_NAME}"
+!define LEGACY_UNINSTALL_REGISTRY_KEY "${UNINSTALL_BASE_REGISTRY_KEY}\${LEGACY_DISPLAY_NAME}"
 
 !define DEFAULT_POSTGRESQL_HOSTNAME 'localhost'
 !define DEFAULT_POSTGRESQL_PORT 5432
@@ -91,7 +111,7 @@ Unicode True
 
 Name '${DISPLAY_NAME}'
 Caption "${PRODUCT_NAME} ${VERSION} Setup"
-OutFile "${TOOLSDIR}\server\odoo_setup_${VERSION}.exe"
+OutFile "${TOOLSDIR}\server\castadoo_setup_${VERSION}.exe"
 SetCompressor /SOLID /FINAL lzma
 ShowInstDetails hide
 
@@ -157,7 +177,7 @@ Page Custom ShowProxyTokenDialogPage
 !define MUI_FINISHPAGE_RUN_TEXT "$(DESC_FinishPageText)"
 !define MUI_FINISHPAGE_RUN_FUNCTION "LaunchLink"
 !define MUI_FINISHPAGE_LINK $(DESC_FinishPage_Link)
-!define MUI_FINISHPAGE_LINK_LOCATION "https://www.odoo.com/page/contactus"
+!define MUI_FINISHPAGE_LINK_LOCATION "https://castasoft.yukreasi.id"
 !insertmacro MUI_PAGE_FINISH
 
 !insertmacro MUI_UNPAGE_WELCOME
@@ -170,11 +190,11 @@ Page Custom ShowProxyTokenDialogPage
 !insertmacro MUI_RESERVEFILE_LANGDLL
 
 ; English
-LangString DESC_Odoo_Server ${LANG_ENGLISH} "Install the Odoo Server with all the Odoo standard modules."
-LangString DESC_PostgreSQL ${LANG_ENGLISH} "Install the PostgreSQL RDBMS used by Odoo."
-LangString DESC_FinishPage_Link ${LANG_ENGLISH} "Contact Odoo for Partnership and/or Support"
+LangString DESC_Odoo_Server ${LANG_ENGLISH} "Install the CASTADOO Server with all the CASTADOO standard modules."
+LangString DESC_PostgreSQL ${LANG_ENGLISH} "Install the PostgreSQL RDBMS used by CASTADOO."
+LangString DESC_FinishPage_Link ${LANG_ENGLISH} "Contact CASTASOFT for Partnership and/or Support"
 LangString DESC_AtLeastOneComponent ${LANG_ENGLISH} "You have to choose at least one component"
-LangString DESC_CanNotInstallPostgreSQL ${LANG_ENGLISH} "You can not install the PostgreSQL database without the Odoo Server"
+LangString DESC_CanNotInstallPostgreSQL ${LANG_ENGLISH} "You can not install the PostgreSQL database without the CASTADOO Server"
 LangString WARNING_HostNameIsEmpty ${LANG_ENGLISH} "The hostname for the connection to the PostgreSQL Server is empty"
 LangString WARNING_UserNameIsEmpty ${LANG_ENGLISH} "The username for the connection to the PostgreSQL Server is empty"
 LangString WARNING_PasswordIsEmpty ${LANG_ENGLISH} "The password for the connection to the PostgreSQL Server is empty"
@@ -184,30 +204,30 @@ LangString DESC_PostgreSQL_Hostname ${LANG_ENGLISH} "Hostname"
 LangString DESC_PostgreSQL_Port ${LANG_ENGLISH} "Port"
 LangString DESC_PostgreSQL_Username ${LANG_ENGLISH} "Username"
 LangString DESC_PostgreSQL_Password ${LANG_ENGLISH} "Password"
-LangString DESC_OdooDBSection ${LANG_ENGLISH} "Odoo PostgreSQL User"
-LangString DESC_OdooDBPage ${LANG_ENGLISH} "Configure the Odoo PostgreSQL user credentials"
-LangString DESC_OdooDB_Username ${LANG_ENGLISH} "Odoo DB Username"
-LangString DESC_OdooDB_Password ${LANG_ENGLISH} "Odoo DB Password"
-LangString WARNING_OdooDBUsernameIsEmpty ${LANG_ENGLISH} "The Odoo database username cannot be empty"
-LangString WARNING_OdooDBPasswordIsEmpty ${LANG_ENGLISH} "The Odoo database password cannot be empty"
-LangString WARNING_OdooDBUsernameInvalid ${LANG_ENGLISH} "The Odoo database username must contain only letters, digits and underscores, and start with a letter or underscore"
-LangString Profile_AllInOne ${LANG_ENGLISH} "Odoo Server And PostgreSQL Server"
-LangString Profile_Server ${LANG_ENGLISH} "Odoo Server Only"
-LangString Profile_IOT ${LANG_ENGLISH} "Odoo IoT"
-LangString TITLE_Odoo_Server ${LANG_ENGLISH} "Odoo Server"
+LangString DESC_OdooDBSection ${LANG_ENGLISH} "CASTADOO PostgreSQL User"
+LangString DESC_OdooDBPage ${LANG_ENGLISH} "Configure the CASTADOO PostgreSQL user credentials"
+LangString DESC_OdooDB_Username ${LANG_ENGLISH} "CASTADOO DB Username"
+LangString DESC_OdooDB_Password ${LANG_ENGLISH} "CASTADOO DB Password"
+LangString WARNING_OdooDBUsernameIsEmpty ${LANG_ENGLISH} "The CASTADOO database username cannot be empty"
+LangString WARNING_OdooDBPasswordIsEmpty ${LANG_ENGLISH} "The CASTADOO database password cannot be empty"
+LangString WARNING_OdooDBUsernameInvalid ${LANG_ENGLISH} "The CASTADOO database username must contain only letters, digits and underscores, and start with a letter or underscore"
+LangString Profile_AllInOne ${LANG_ENGLISH} "CASTADOO Server And PostgreSQL Server"
+LangString Profile_Server ${LANG_ENGLISH} "CASTADOO Server Only"
+LangString Profile_IOT ${LANG_ENGLISH} "CASTADOO IoT"
+LangString TITLE_Odoo_Server ${LANG_ENGLISH} "CASTADOO Server"
 LangString TITLE_PostgreSQL ${LANG_ENGLISH} "PostgreSQL Database"
-LangString TITLE_IOT ${LANG_ENGLISH} "Odoo IoT"
+LangString TITLE_IOT ${LANG_ENGLISH} "CASTADOO IoT"
 LangString TITLE_Nginx ${LANG_ENGLISH} "Nginx WebServer"
 LangString TITLE_Ghostscript ${LANG_ENGLISH} "Ghostscript interpreter"
-LangString DESC_FinishPageText ${LANG_ENGLISH} "Start Odoo"
+LangString DESC_FinishPageText ${LANG_ENGLISH} "Start CASTADOO"
 LangString UnsafeDirText ${LANG_ENGLISH} "Installing outside of $PROGRAMFILES64 is not recommended.$\nDo you want to continue ?"
 
 ; French
-LangString DESC_Odoo_Server ${LANG_FRENCH} "Installation du Serveur Odoo avec tous les modules Odoo standards."
-LangString DESC_PostgreSQL ${LANG_FRENCH} "Installation de la base de données PostgreSQL utilisée par Odoo."
-LangString DESC_FinishPage_Link ${LANG_FRENCH} "Contactez Odoo pour un Partenariat et/ou du Support"
+LangString DESC_Odoo_Server ${LANG_FRENCH} "Installation du Serveur CASTADOO avec tous les modules CASTADOO standards."
+LangString DESC_PostgreSQL ${LANG_FRENCH} "Installation de la base de données PostgreSQL utilisée par CASTADOO."
+LangString DESC_FinishPage_Link ${LANG_FRENCH} "Contactez CASTASOFT pour un Partenariat et/ou du Support"
 LangString DESC_AtLeastOneComponent ${LANG_FRENCH} "Vous devez choisir au moins un composant"
-LangString DESC_CanNotInstallPostgreSQL ${LANG_FRENCH} "Vous ne pouvez pas installer la base de données PostgreSQL sans le serveur Odoo"
+LangString DESC_CanNotInstallPostgreSQL ${LANG_FRENCH} "Vous ne pouvez pas installer la base de données PostgreSQL sans le serveur CASTADOO"
 LangString WARNING_HostNameIsEmpty ${LANG_FRENCH} "L'adresse pour la connection au serveur PostgreSQL est vide"
 LangString WARNING_UserNameIsEmpty ${LANG_FRENCH} "Le nom d'utilisateur pour la connection au serveur PostgreSQL est vide"
 LangString WARNING_PasswordIsEmpty ${LANG_FRENCH} "Le mot de passe pour la connection au serveur PostgreSQL est vide"
@@ -217,22 +237,22 @@ LangString DESC_PostgreSQL_Hostname ${LANG_FRENCH} "Hôte"
 LangString DESC_PostgreSQL_Port ${LANG_FRENCH} "Port"
 LangString DESC_PostgreSQL_Username ${LANG_FRENCH} "Utilisateur"
 LangString DESC_PostgreSQL_Password ${LANG_FRENCH} "Mot de passe"
-LangString DESC_OdooDBSection ${LANG_FRENCH} "Utilisateur Odoo PostgreSQL"
-LangString DESC_OdooDBPage ${LANG_FRENCH} "Configurez les identifiants de l'utilisateur Odoo pour PostgreSQL"
-LangString DESC_OdooDB_Username ${LANG_FRENCH} "Utilisateur Odoo"
-LangString DESC_OdooDB_Password ${LANG_FRENCH} "Mot de passe Odoo"
-LangString WARNING_OdooDBUsernameIsEmpty ${LANG_FRENCH} "Le nom d'utilisateur Odoo ne peut pas être vide"
-LangString WARNING_OdooDBPasswordIsEmpty ${LANG_FRENCH} "Le mot de passe Odoo ne peut pas être vide"
-LangString WARNING_OdooDBUsernameInvalid ${LANG_FRENCH} "Le nom d'utilisateur Odoo ne peut contenir que des lettres, chiffres et underscores, et doit commencer par une lettre ou un underscore"
-LangString Profile_AllInOne ${LANG_FRENCH} "Serveur Odoo Et Serveur PostgreSQL"
-LangString Profile_Server ${LANG_FRENCH} "Seulement Le Serveur Odoo"
-LangString Profile_IOT ${LANG_FRENCH} "Odoo IoT"
-LangString TITLE_Odoo_Server ${LANG_FRENCH} "Serveur Odoo"
+LangString DESC_OdooDBSection ${LANG_FRENCH} "Utilisateur CASTADOO PostgreSQL"
+LangString DESC_OdooDBPage ${LANG_FRENCH} "Configurez les identifiants de l'utilisateur CASTADOO pour PostgreSQL"
+LangString DESC_OdooDB_Username ${LANG_FRENCH} "Utilisateur CASTADOO"
+LangString DESC_OdooDB_Password ${LANG_FRENCH} "Mot de passe CASTADOO"
+LangString WARNING_OdooDBUsernameIsEmpty ${LANG_FRENCH} "Le nom d'utilisateur CASTADOO ne peut pas être vide"
+LangString WARNING_OdooDBPasswordIsEmpty ${LANG_FRENCH} "Le mot de passe CASTADOO ne peut pas être vide"
+LangString WARNING_OdooDBUsernameInvalid ${LANG_FRENCH} "Le nom d'utilisateur CASTADOO ne peut contenir que des lettres, chiffres et underscores, et doit commencer par une lettre ou un underscore"
+LangString Profile_AllInOne ${LANG_FRENCH} "Serveur CASTADOO Et Serveur PostgreSQL"
+LangString Profile_Server ${LANG_FRENCH} "Seulement Le Serveur CASTADOO"
+LangString Profile_IOT ${LANG_FRENCH} "CASTADOO IoT"
+LangString TITLE_Odoo_Server ${LANG_FRENCH} "Serveur CASTADOO"
 LangString TITLE_PostgreSQL ${LANG_FRENCH} "Installation du serveur de base de données PostgreSQL"
-LangString TITLE_IOT ${LANG_FRENCH} "Odoo IoT"
+LangString TITLE_IOT ${LANG_FRENCH} "CASTADOO IoT"
 LangString TITLE_Nginx ${LANG_FRENCH} "Installation du serveur web Nginx"
 LangString TITLE_Ghostscript ${LANG_FRENCH} "Installation de l'interpréteur Ghostscript"
-LangString DESC_FinishPageText ${LANG_FRENCH} "Démarrer Odoo"
+LangString DESC_FinishPageText ${LANG_FRENCH} "Démarrer CASTADOO"
 LangString UnsafeDirText ${LANG_FRENCH} "Installer en dehors de $PROGRAMFILES64 n'est pas recommandé.$\nVoulez-vous continuer ?"
 
 InstType /NOCUSTOM
@@ -271,7 +291,7 @@ Section $(TITLE_Odoo_Server) SectionOdoo_Server
     SetOutPath "$INSTDIR\thirdparty"
     File /r "${TOOLSDIR}\wkhtmltopdf\*"
 
-    # If there is a previous install of the Odoo Server, keep the login/password from the config file
+    # If there is a previous install of the CASTADOO Server, keep the login/password from the config file
     WriteIniStr "$INSTDIR\server\odoo.conf" "options" "db_host" $TextPostgreSQLHostname
     WriteIniStr "$INSTDIR\server\odoo.conf" "options" "db_user" $TextOdooDBUsername
     WriteIniStr "$INSTDIR\server\odoo.conf" "options" "db_password" $TextOdooDBPassword
@@ -333,7 +353,7 @@ Section $(TITLE_PostgreSQL) SectionPostgreSQL
         --superaccount "$TextPostgreSQLUsername" --superpassword "$TextPostgreSQLPassword" \
         --serverport $TextPostgreSQLPort'
 
-    DetailPrint "Creating Odoo database user with CREATEDB privilege"
+    DetailPrint "Creating CASTADOO database user with CREATEDB privilege"
     ${WordReplace} $TextOdooDBPassword "'" "''" "+" $R0
     System::Call 'Kernel32::SetEnvironmentVariableW(w "PGPASSWORD", w "$TextPostgreSQLPassword")'
     nsExec::ExecToStack `"$INSTDIR\PostgreSQL\bin\psql.exe" -w -U "$TextPostgreSQLUsername" -h "$TextPostgreSQLHostname" -p $TextPostgreSQLPort -d postgres -c "CREATE ROLE $TextOdooDBUsername WITH CREATEDB NOSUPERUSER NOCREATEROLE LOGIN PASSWORD '$R0'"`
@@ -341,9 +361,9 @@ Section $(TITLE_PostgreSQL) SectionPostgreSQL
     Pop $R2
     System::Call 'Kernel32::SetEnvironmentVariableW(w "PGPASSWORD", w "")'
     ${If} $R1 != 0
-        DetailPrint "Failed to create Odoo database user (psql exit code $R1)"
+        DetailPrint "Failed to create CASTADOO database user (psql exit code $R1)"
     ${Else}
-        DetailPrint "Odoo database user created successfully"
+        DetailPrint "CASTADOO database user created successfully"
     ${EndIf}
 SectionEnd
 
@@ -420,13 +440,27 @@ Section -Post
     WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "DisplayName" "${DISPLAY_NAME}"
     WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "DisplayVersion" "${MAJOR_VERSION}.${MINOR_VERSION}"
     WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "Publisher" "${PUBLISHER}"
-    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "HelpLink" "support@odoo.com"
-    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "HelpTelephone" "+32.81.81.37.00"
-    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "URLInfoAbout" "https://www.odoo.com"
-    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "Contact" "sales@odoo.com"
+    # HelpLink is a URL field in the Add/Remove Programs schema and upstream put
+    # an e-mail address in it. Only the address CASTASOFT actually publishes is
+    # used. The Odoo sales address, the Belgian telephone number and the
+    # odoo.com URL are removed rather than replaced with invented values -
+    # HelpTelephone is therefore no longer written at all.
+    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "HelpLink" "https://castasoft.yukreasi.id"
+    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "URLInfoAbout" "https://castasoft.yukreasi.id"
+    WriteRegStr HKLM       "${UNINSTALL_REGISTRY_KEY}" "Contact" "info@castasoft.yukreasi.id"
     WriteRegDWORD HKLM     "${UNINSTALL_REGISTRY_KEY}" "NoModify" "1"
     WriteRegDWORD HKLM     "${UNINSTALL_REGISTRY_KEY}" "NoRepair" "1"
     WriteUninstaller "$INSTDIR\Uninstall.exe"
+
+    # Transition release only: drop the pre-rebrand Add/Remove entry, whose
+    # UninstallString now points at the Uninstall.exe just written above.
+    # Guarded on InstallLocation so a genuine side-by-side install survives.
+    ReadRegStr $0 HKLM "${LEGACY_UNINSTALL_REGISTRY_KEY}" "InstallLocation"
+    ${If} $0 != ""
+        ${If} $0 == "$INSTDIR"
+            DeleteRegKey HKLM "${LEGACY_UNINSTALL_REGISTRY_KEY}"
+        ${EndIf}
+    ${EndIf}
 SectionEnd
 
 !insertmacro MUI_FUNCTION_DESCRIPTION_BEGIN
@@ -465,10 +499,19 @@ Function .onInit
     SetRegView 64
     ReadRegStr $previous_install_dir HKLM "${REGISTRY_KEY}" "Install_Dir"
     ${If} $previous_install_dir == ""
-        StrCpy $INSTDIR "$PROGRAMFILES64\Odoo ${VERSION}"
+        # The registry identity moved with PRODUCT_NAME, so an install created
+        # before the rebrand is still registered under the legacy key. Reading
+        # it here is what keeps the whole transition inside one release.
+        ReadRegStr $previous_install_dir HKLM "${LEGACY_REGISTRY_KEY}" "Install_Dir"
+    ${EndIf}
+    ${If} $previous_install_dir == ""
+        StrCpy $INSTDIR "$PROGRAMFILES64\${PRODUCT_NAME} ${VERSION}"
         WriteRegStr HKLM "${REGISTRY_KEY}" "Install_dir" "$INSTDIR"
     ${Else}
         StrCpy $INSTDIR $previous_install_dir
+        # Adopted, whether found under the current or the legacy key: record it
+        # under the current one so the next release does not orphan it again.
+        WriteRegStr HKLM "${REGISTRY_KEY}" "Install_dir" "$INSTDIR"
     ${EndIf}
 
     Push $R0
@@ -682,7 +725,7 @@ Function ShowProxyTokenDialogPage
             Abort
         ${EndIf}
 
-        ${NSD_CreateLabel} 0 0 100% 25% "Here is your access token for the Odoo IOT, please write it down in a safe place, you will need it to configure the IOT"
+        ${NSD_CreateLabel} 0 0 100% 25% "Here is your access token for the CASTADOO IoT, please write it down in a safe place, you will need it to configure the IoT"
         Pop $ProxyTokenLabel
 
         ${NSD_CreateText} 0 30% 100% 13u $ProxyTokenPwd
@@ -713,7 +756,7 @@ Function LaunchLink
 FunctionEnd
 
 Function RestartOdooService
-    DetailPrint "Restarting Odoo Service"
+    DetailPrint "Restarting CASTADOO Service"
     ExecWait "net stop ${SERVICENAME}"
     ExecWait "net start ${SERVICENAME}"
 FunctionEnd

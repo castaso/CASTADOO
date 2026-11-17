@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 5. PDF document <title>.
+         Upstream declares the same string twice, in two separate templates on
+         the same file (report_templates.xml:16 and :50), so this needs two
+         inherited records: one <xpath> cannot span two parents.
+
+         This is PDF *metadata* only. The visible report header is
+         res.company data — name and logo — which the deployment checklist
+         supplies; a module that seeded a company record would collide with
+         every real deployment. -->
+
+    <template id="castadoo_report_title" name="CASTADOO: report title fallback"
+              inherit_id="web.report_layout">
+        <xpath expr="//title/t" position="attributes">
+            <attribute name="t-esc">title or 'CASTADOO Report'</attribute>
+        </xpath>
+    </template>
+
+    <template id="castadoo_report_preview_title" name="CASTADOO: report preview title fallback"
+              inherit_id="web.report_preview_layout">
+        <xpath expr="//title/t" position="attributes">
+            <attribute name="t-esc">title or 'CASTADOO Report'</attribute>
+        </xpath>
+    </template>
+
+</odoo>

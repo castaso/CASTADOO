@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 17. Two parents in one module, because the button and the footer
+         live in different templates.
+
+           hr_expense.hr_expense_template_register
+               declared :11, button carries style="background-color: #9E588B;" at :31
+
+           hr_expense.hr_expense_template_register_no_user
+               declared :35, footer carries style="color:#9E588B;" at :49
+
+         #9E588B is a FOURTH purple in this tree - distinct from #714B67,
+         #71639e and #875A7B - and it is not reachable from
+         email_secondary_color. A blanket replace of #875A7B would miss this
+         module entirely. Both anchors are here, not just the footer, because
+         both are user-visible.
+
+         Note the second template t-calls the first (:48), so the button renders
+         through the call and is branded by the first record alone. -->
+
+    <template id="castadoo_expense_button"
+              name="CASTADOO: expense button colour"
+              inherit_id="hr_expense.hr_expense_template_register">
+        <xpath expr="//a[contains(@style, '#9E588B')]" position="attributes">
+            <attribute name="style">background-color: #303188; margin-top: 10px; padding: 10px; text-decoration: none; color: #fff; border-radius: 5px; font-size: 16px;</attribute>
+        </xpath>
+    </template>
+
+    <template id="castadoo_expense_footer"
+              name="CASTADOO: expense footer"
+              inherit_id="hr_expense.hr_expense_template_register_no_user">
+        <xpath expr="//p[contains(@style, '#9E588B')]" position="replace">
+            <p style="color:#303188;">Powered by <a target="_blank" href="https://castasoft.yukreasi.id">CASTADOO</a>.</p>
+        </xpath>
+    </template>
+
+</odoo>

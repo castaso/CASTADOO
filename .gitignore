@@ -4,6 +4,7 @@ _build/
 # dotfiles
 .*
 !.gitignore
+!.gitattributes
 !.github
 !.mailmap
 !.weblate.json
@@ -40,6 +41,18 @@ tsconfig.json
 package-lock.json
 package.json
 .husky
+
+# CASTADOO: the asset pipeline pins its toolchain, so its manifest and lockfile
+# are source files rather than generated ones. Unlike every other package.json
+# and package-lock.json in this tree, these two must be committed, otherwise
+# `npm install` re-resolves and the committed bitmaps stop being reproducible.
+#
+# These negations must stay *below* the js tooling block above: gitignore is
+# last-match-wins, and the bare `package.json` / `package-lock.json` patterns
+# there would otherwise re-ignore these paths. Only these paths are re-included;
+# the global rules stay in force everywhere else.
+!castadoo/assets/package.json
+!castadoo/assets/package-lock.json
 
 # various virtualenv
 /bin/

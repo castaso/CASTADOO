@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 13. Portal sidebar badge, addons/portal/views/portal_templates.xml:288.
+
+         This is the portal *web* UI, not an email - the register lists it under
+         Surface 4 only because the string is identical. The anchor is a page
+         element inside portal.portal_record_sidebar's sidebar block.
+
+         The <img> keeps src="/web/static/img/logo.png": that blob is replaced in
+         place by item 27, so the horizontal lockup appears here without a path
+         edit, and the filename is never shown to a user. Only the link target
+         and the accessible name change. The anchor's title="odoo" attribute is
+         also replaced: it is a tooltip, which is user-visible. -->
+    <template id="castadoo_portal_sidebar" name="CASTADOO: portal sidebar badge"
+              inherit_id="portal.portal_record_sidebar">
+        <xpath expr="//div[contains(@class, 'o_portal_sidebar')]//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" title="CASTADOO">
+                <img src="/web/static/img/logo.png" alt="CASTADOO" height="15"/>
+            </a>
+        </xpath>
+    </template>
+
+</odoo>

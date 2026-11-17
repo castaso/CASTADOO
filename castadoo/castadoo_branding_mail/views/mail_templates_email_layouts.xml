@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 9. Notification-email footers.
+
+         Both templates live in addons/mail/data/ - a `data/` file - but they are
+         QWeb <template> views, not mail.template records, which is precisely why
+         they are inheritable at all. (The seven mail.template *bodies* that
+         hardcode a footer are excluded by decision D1-C; those are DATA records
+         and cannot be inherited.)
+
+         The inline t-att-style expression is deliberately preserved through the
+         replacement: it reads company.email_secondary_color, so the company
+         setting still drives the colour. The seed in data/res_company.xml sets
+         that field; hardcoding navy here would make the setting inert and
+         unbrand the footer for any operator who changes it. The fallback is
+         changed from #875A7B to #303188 so that a company with no secondary
+         colour set still gets CASTADOO navy rather than Odoo purple.
+
+         The surrounding "Powered by " text node is upstream markup and is left
+         alone, so the footer reads "Powered by CASTADOO". -->
+
+    <!-- Full layout: footer anchor at :104-105. Anchored on the anchor's href so
+         an upstream restructure fails loudly at install rather than silently
+         leaving an odoo.com link inside the email. -->
+    <template id="castadoo_mail_notification_layout"
+              name="CASTADOO: notification footer (layout)"
+              inherit_id="mail.mail_notification_layout">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" t-att-style="'color: ' + (company.email_secondary_color or '#303188') + ';'">CASTADOO</a>
+        </xpath>
+    </template>
+
+    <!-- Light layout: the same footer at :178-179, inside a separate template,
+         so a separate record. One xpath cannot span two parents. -->
+    <template id="castadoo_mail_notification_light"
+              name="CASTADOO: notification footer (light)"
+              inherit_id="mail.mail_notification_light">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" t-att-style="'color: ' + (company.email_secondary_color or '#303188') + ';'">CASTADOO</a>
+        </xpath>
+    </template>
+
+</odoo>

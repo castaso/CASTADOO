@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    Item 23. The printed receipt footer.
+
+    Parent: point_of_sale.OrderReceipt, declared at
+    addons/point_of_sale/static/src/app/screens/receipt_screen/receipt/order_receipt.xml:3.
+    The footer <p>Powered by Odoo</p> is at :140, inside
+    div.pos-receipt-order-data.
+
+    t-inherit-mode="extension" with NO t-name, done deliberately: that is the
+    stock pattern (odoo/addons/base/models/assetsbundle.py:490-496 only treats a
+    template as new when the mode is "primary") and it patches
+    point_of_sale.OrderReceipt in place. Adding a t-name here would create a
+    *separate* template that nothing renders, and the receipt would keep reading
+    Odoo with no error anywhere - the silent failure this item warns about.
+
+    Inheritance is resolved server-side at asset-bundle time by
+    ir.ui.view.apply_inheritance_specs (assetsbundle.py:492), so this uses the
+    same lxml xpath dialect as ir.ui.view, including the custom hasclass()
+    function registered at ir_ui_view.py:147.
+
+    Bundled via point_of_sale.assets_prod (see __manifest__.py); POS templates
+    are not ir.ui.view records, so QWeb template inheritance cannot reach them.
+-->
+<templates>
+
+    <t t-inherit="point_of_sale.OrderReceipt"
+       t-inherit-mode="extension">
+
+        <xpath expr="//div[hasclass('pos-receipt-order-data')]/p[1]" position="replace">
+            <p>Powered by CASTADOO</p>
+        </xpath>
+
+    </t>
+
+</templates>

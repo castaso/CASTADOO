@@ -1,0 +1,120 @@
+name: brand gates
+
+# Three gates, in the order the sync procedure runs them. Gate 1 first because
+# everything downstream assumes the mirror base is correct: a three-dot diff
+# computes off a merge-base, so a stale 17.0 makes Gate 2 pass on a wrong base.
+#
+# Deliberately not path-filtered. The failure this guards against is silent, and
+# a push that touches nothing in the manifest can still move a line number that
+# an allowlist entry names.
+
+on:
+  push:
+    branches: ["castadoo/17.0", "17.0"]
+  pull_request:
+    branches: ["castadoo/17.0"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  gate-1-mirror-identity:
+    name: Gate 1 - mirror identity
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Fetch upstream ref
+        run: |
+          git remote add upstream https://github.com/odoo/odoo.git || true
+          git fetch --no-tags upstream 17.0
+      - name: 17.0 must equal upstream/17.0
+        run: |
+          local_sha="$(git rev-parse 17.0)"
+          upstream_sha="$(git rev-parse upstream/17.0)"
+          echo "17.0          = $local_sha"
+          echo "upstream/17.0 = $upstream_sha"
+          if [ "$local_sha" != "$upstream_sha" ]; then
+            echo "::error::The mirror branch 17.0 has been edited. It must be a"
+            echo "::error::byte-for-byte mirror of upstream/17.0. Reset it with"
+            echo "::error::'git checkout 17.0 && git reset --hard upstream/17.0'."
+            exit 1
+          fi
+
+  gate-2-diff-budget:
+    name: Gate 2 - diff budget
+    runs-on: ubuntu-latest
+    needs: gate-1-mirror-identity
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch upstream ref
+        run: |
+          git remote add upstream https://github.com/odoo/odoo.git || true
+          # The refspec matters. `git fetch upstream 17.0` writes only FETCH_HEAD
+          # and creates no `17.0` or `upstream/17.0` ref, so the diff below would
+          # fail with "unknown revision" - which is exactly how this job was
+          # broken before it ever ran. Write the remote-tracking ref explicitly.
+          git fetch --no-tags upstream 17.0:refs/remotes/upstream/17.0
+      # The manifest is the only input: the path list, the line budget and the
+      # allowlist all come from it, so no number in this file is typed twice.
+      - name: Measure
+        run: python castadoo/tools/render_manifest.py --measure
+
+  gate-3-brand-lint:
+    name: Gate 3 - brand lint (pathlint + treelint)
+    runs-on: ubuntu-latest
+    needs: gate-1-mirror-identity
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Fetch upstream ref
+        run: |
+          git remote add upstream https://github.com/odoo/odoo.git || true
+          git fetch --no-tags upstream 17.0:refs/remotes/upstream/17.0
+      # --measure runs Gate 2 and Gate 3a. 3a is the per-path "Odoo" check, where
+      # every hit must carry an allowlist reason from the closed vocabulary.
+      - name: Gate 3a - pathlint
+        run: python castadoo/tools/render_manifest.py --measure
+      # Gate 3b is DIFFERENTIAL against the mirror, not a whole-tree grep.
+      # Measured: the badge literal already appears in 52 files on pristine 17.0,
+      # so "no hits anywhere" fails on untouched upstream and could never pass -
+      # and a gate that always fails gets switched off. The differential form
+      # fails only when this fork adds a badge, counting per file so a second
+      # badge inside an already-hit file is still caught (verified with a canary).
+      - name: Gate 3b - treelint
+        run: python castadoo/tools/render_manifest.py --lint
+
+  addons-validate:
+    name: Addon tree validation
+    runs-on: ubuntu-latest
+    needs: gate-1-mirror-identity
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install the XML library Odoo's inheritance engine uses
+        run: pip install lxml
+      # These are the checks an install would catch, run without a database.
+      # A view file not listed in `data`, an asset not in a bundle, a manifest
+      # that does not parse, or an xpath matching zero nodes are all invisible
+      # to the three gates above.
+      - name: Validate manifests, paths and syntax
+        run: python castadoo/tools/validate_addons.py
+      - name: Resolve every xpath against its parent template
+        run: python castadoo/tools/check_anchors.py
+      - name: ruff
+        run: |
+          pip install ruff
+          ruff check castadoo/

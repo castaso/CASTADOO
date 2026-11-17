@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 11. Four sites across TWO templates: the CTA button colour and the
+         footer, in each of reset_password_email and alert_login_new_device.
+
+         Unlike item 9, these hardcode style="color: #875A7B;" INLINE rather than
+         reading company.email_secondary_color, so the colour must be replaced in
+         the markup. Setting the company field does not reach them.
+
+         Anchors:
+           reset_password_email    declared :3   button :35-36  footer :81
+           alert_login_new_device  declared :88  button :121-122 footer :143
+
+         The button anchor is the <a> carrying t-att-href that sits inside the
+         "margin: 16px 0px 16px 0px" wrapper - the wrapper div is the stable
+         marker, because both buttons share identical inline styles and an
+         //a[contains(@style,'875A7B')] selector would be ambiguous within one
+         template. -->
+
+    <!-- ── reset_password_email ───────────────────────────────────────────── -->
+
+    <template id="castadoo_reset_password_button"
+              name="CASTADOO: reset password button colour"
+              inherit_id="auth_signup.reset_password_email">
+        <xpath expr="//div[@style='margin: 16px 0px 16px 0px;']/a" position="attributes">
+            <attribute name="style">background-color: #303188; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;</attribute>
+        </xpath>
+    </template>
+
+    <template id="castadoo_reset_password_footer"
+              name="CASTADOO: reset password footer"
+              inherit_id="auth_signup.reset_password_email">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" style="color: #303188;">CASTADOO</a>
+        </xpath>
+    </template>
+
+    <!-- ── alert_login_new_device ─────────────────────────────────────────── -->
+
+    <template id="castadoo_alert_new_device_button"
+              name="CASTADOO: new device alert button colour"
+              inherit_id="auth_signup.alert_login_new_device">
+        <xpath expr="//div[@style='margin: 16px 0px 16px 0px;']/a" position="attributes">
+            <attribute name="style">background-color: #303188; padding: 8px 16px 8px 16px; text-decoration: none; color: #fff; border-radius: 5px; font-size:13px;</attribute>
+        </xpath>
+    </template>
+
+    <template id="castadoo_alert_new_device_footer"
+              name="CASTADOO: new device alert footer"
+              inherit_id="auth_signup.alert_login_new_device">
+        <xpath expr="//a[contains(@href, 'www.odoo.com')]" position="replace">
+            <a target="_blank" href="https://castasoft.yukreasi.id" style="color: #303188;">CASTADOO</a>
+        </xpath>
+    </template>
+
+</odoo>

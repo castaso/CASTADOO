@@ -51,8 +51,13 @@ class WebManifest(http.Controller):
             'scope': '/web',
             'start_url': '/web',
             'display': 'standalone',
-            'background_color': '#714B67',
-            'theme_color': '#714B67',
+            # CASTADOO: navy from the CASTASOFT mark. The name is deliberately
+            # not edited here - it reads ir.config_parameter['web.web_app_name']
+            # with a stock default of 'Odoo', and that parameter is seeded as
+            # module data by castadoo_branding. The icon paths are not edited
+            # either: filenames are preserved and the blobs are replaced in place.
+            'background_color': '#303188',
+            'theme_color': '#303188',
             'prefer_related_applications': False,
         }
         icon_sizes = ['192x192', '512x512']

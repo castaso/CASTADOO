@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo noupdate="1">
+
+    <!-- The email button/footer colour, seeded on the default company.
+
+         email_secondary_color lives in `mail`, not `base` (declared at
+         addons/mail/models/res_company.py:33), which is why this seed belongs to
+         this overlay and not to the base addon that depends on `web` alone.
+
+         Reaches, with zero source edits:
+           * mail_notification_layout  (mail_templates_email_layouts.xml:105)
+           * mail_notification_light   (:179)
+           * digest_mail_layout        (digest_data.xml:14)
+         and does NOT reach the sites that hardcode their colour inline
+         (auth_signup, im_livechat, website_slides, hr_expense) — those are
+         replaced in markup by their own overlays.
+
+         base.main_company is updated, not created: it is a real xmlid declared
+         in base/data/res_company_data.xml. Writing a bare <record> without the
+         base. prefix would create a second company named CASTADOO, which is the
+         failure this comment exists to prevent.
+
+         KNOWN SIDE EFFECT, stated rather than hidden: this writes on first
+         install, so a database whose operator had already chosen a different
+         button colour will see it replaced. The value is one field on the
+         default company, and noupdate="1" keeps it from being re-applied on
+         every later module update. The deployment checklist states the value so
+         an operator can restore their own. Seeding it is still the right trade:
+         without it every notification email ships Odoo purple (#875A7B) on a
+         user-facing surface.
+
+         Also note the field is computed from `secondary_color`, so an operator
+         who later edits that field re-derives this one back to the stock
+         #875A7B. That is upstream behaviour and not preventable here. -->
+
+    <record id="base.main_company" model="res.company">
+        <field name="email_secondary_color">#303188</field>
+    </record>
+
+</odoo>

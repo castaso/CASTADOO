@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+
+    <!-- Item 19. Two footers, one parent, and no colour edit.
+
+         digest.digest_mail_main spans :270-451 and holds BOTH footers:
+           :397-399  Sent by <a href="https://www.odoo.com"><span class="odoo_link_text">Odoo</span></a>
+           :435-437  Powered by <a href="https://www.odoo.com" class="odoo_link">...
+
+         Both are branded here because a single-line grep for "Powered by" finds
+         only the second - the first says "Sent by". Two separate anchors, so two
+         xpaths in one record.
+
+         NO COLOUR EDIT IS NEEDED. digest.digest_mail_layout:14 defines
+         color_company = company.email_secondary_color or '#714B67' and applies it
+         at :58, :87 and :147. The seed in castadoo_branding_mail sets
+         email_secondary_color, which reaches all three with zero source edits.
+         The colour anchors live in digest_mail_layout, NOT here, so inheriting
+         this template for colour would do nothing.
+
+         The classes odoo_link / odoo_link_text are kept: they are styling hooks,
+         not branding, and renaming them would break upstream CSS. -->
+
+    <template id="castadoo_digest_sent_by"
+              name="CASTADOO: digest 'Sent by' footer"
+              inherit_id="digest.digest_mail_main">
+        <xpath expr="//div[contains(@class, 'by_odoo')][not(@id='powered')]" position="replace">
+            <div class="by_odoo" style="margin-bottom: 15px;">
+                Sent by <a href="https://castasoft.yukreasi.id" target="_blank">
+                <span class="odoo_link_text">CASTADOO</span></a>
+                <t t-if="unsubscribe_token">
+                    &#8212;
+                    <a t-attf-href="/digest/#{object.id}/unsubscribe?token=#{unsubscribe_token}&amp;user_id=#{user.id}" target="_blank"
+                        style="text-decoration: none;">
+                        <span style="color: #878d97;">Unsubscribe</span>
+                    </a>
+                </t>
+            </div>
+        </xpath>
+    </template>
+
+    <template id="castadoo_digest_powered_by"
+              name="CASTADOO: digest 'Powered by' footer"
+              inherit_id="digest.digest_mail_main">
+        <xpath expr="//p[@id='powered']" position="replace">
+            <p class="by_odoo" id="powered">
+                Powered by <a href="https://castasoft.yukreasi.id" target="_blank" class="odoo_link">
+                    <span class="odoo_link_text">CASTADOO</span></a>
+            </p>
+        </xpath>
+    </template>
+
+</odoo>

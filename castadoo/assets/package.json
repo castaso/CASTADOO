@@ -1,0 +1,15 @@
+{
+  "name": "castadoo-assets",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Regenerates the CASTADOO brand binaries at their existing upstream paths. A recipe, not a build step: run it by hand when the design changes.",
+  "license": "LGPL-3.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build_assets.mjs"
+  },
+  "dependencies": {
+    "opentype.js": "1.3.4",
+    "sharp": "0.33.5"
+  }
+}
