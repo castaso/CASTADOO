@@ -55,6 +55,10 @@ TREELINT_EXCLUDES = (
     ":(exclude)docs/**",
     ":(exclude)addons/web/static/lib/**",
     ":(exclude)debian/**",
+    # The gate's own definition and configuration must be able to name the
+    # literal they check for. Neither ships to a user.
+    ":(exclude)castadoo/tools/**",
+    ":(exclude)castadoo/change_manifest.toml",
 )
 
 
@@ -257,16 +261,35 @@ def cmd_render() -> int:
     return 0
 
 
+def strip_comments(text: str, suffix: str) -> str:
+    """Remove commentary so the lint sees what ships, not what is described.
+
+    Without this the gate fails on its own documentation: overlay templates
+    quote the upstream markup in an XML comment to explain the anchor, and the
+    manifest asserts the literal is absent. Those are not badges.
+    """
+    if suffix in (".xml", ".html", ".svg", ".qweb"):
+        return re.sub(r"<!--.*?-->", "", text, flags=re.S)
+    if suffix in (".py", ".toml", ".js", ".mjs"):
+        return "\n".join(
+            ln for ln in text.splitlines() if not ln.lstrip().startswith("#")
+        )
+    return text
+
+
 def treelint_counts(ref: str | None) -> dict[str, int]:
-    """path -> number of matching LINES, at `ref` or in the working tree.
+    """path -> number of matching LINES that are not inside a comment.
 
     Counts, not membership: the fork's overlay strategy leaves the upstream
     literal in place for every surface it rebrands, so those files are already
     in the baseline set. A set difference would therefore miss a second badge
     added to a file that already had one - verified with a canary, which the
     membership version accepted. An increase in any file is a regression.
+
+    `git grep -l` is only used to find candidates (it searches 40k files fast);
+    the actual count is done here, on comment-stripped text.
     """
-    args = ["grep", "-c", "-I", "-E", TREELINT_PATTERN]
+    args = ["grep", "-l", "-I", "-E", TREELINT_PATTERN]
     if ref:
         args.append(ref)
     args += ["--", ".", *TREELINT_EXCLUDES]
@@ -275,21 +298,27 @@ def treelint_counts(ref: str | None) -> dict[str, int]:
     )
     if proc.returncode > 1:
         raise SystemExit(f"git grep failed: {proc.stderr}")
-    out: dict[str, int] = {}
+
+    counts: dict[str, int] = {}
+    rx = re.compile(TREELINT_PATTERN)
     for ln in proc.stdout.splitlines():
-        ln = ln.strip()
-        if not ln or ":" not in ln:
+        path = ln.strip()
+        if not path:
             continue
-        # A path may itself contain ':' only on Windows drive specs, which git
-        # does not emit here; splitting on the last ':' is the safe side.
-        path, _, count = ln.rpartition(":")
         if ref and path.startswith(f"{ref}:"):
             path = path[len(ref) + 1:]
         try:
-            out[path] = int(count)
-        except ValueError:
+            text = (
+                git("show", f"{ref}:{path}") if ref
+                else (ROOT / path).read_text(encoding="utf-8", errors="replace")
+            )
+        except (subprocess.CalledProcessError, OSError):
             continue
-    return out
+        live = strip_comments(text, Path(path).suffix)
+        n = sum(1 for line in live.splitlines() if rx.search(line))
+        if n:
+            counts[path] = n
+    return counts
 
 
 def cmd_lint() -> int:
