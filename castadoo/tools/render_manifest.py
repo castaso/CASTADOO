@@ -230,13 +230,14 @@ def cmd_render() -> int:
         "|---|---|---|---|---|",
     ]
     for c in manifest["change"]:
-        if c.get("kind") != "modify-text" or not c.get("upstream_owned"):
+        if c.get("kind") not in ("modify-text", "modify-asset") or not c.get("upstream_owned"):
             continue
         a = c.get("lines_added", "?")
         d = c.get("lines_deleted", "?")
+        note = "" if c.get("counts_against_budget") is not False else " (not budgeted)"
         lines.append(
             f"| `{c['path']}` | {c['kind']} | {c.get('surface', '')} | "
-            f"{c.get('conflict_surface', '')} | {a}/{d} |"
+            f"{c.get('conflict_surface', '')} | {a}/{d}{note} |"
         )
 
     lines += ["", "## Configuration values (invisible to Gates 2 and 3)", "",

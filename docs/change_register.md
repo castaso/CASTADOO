@@ -18,6 +18,9 @@ Mirror branch `17.0`, overlay `castadoo/17.0`, upstream series `17.0`.
 | `setup/package.py` | modify-text | S5 | anchor | 1/1 |
 | `setup/win32/setup.nsi` | modify-text | S5 | recurring | 92/49 |
 | `setup/win32/static/doc/License.rtf` | modify-text | S5 | whole-file | 2/0 |
+| `addons/web/static/img/odoo-icon.svg` | modify-asset | S1,S6 | whole-file | 46/156 (not budgeted) |
+| `addons/web/static/img/odoo_logo.svg` | modify-asset | S1 | whole-file | 78/10 (not budgeted) |
+| `addons/web/static/img/odoo_logo_dark.svg` | modify-asset | S1 | whole-file | 78/10 (not budgeted) |
 
 ## Configuration values (invisible to Gates 2 and 3)
 

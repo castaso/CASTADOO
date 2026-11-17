@@ -47,7 +47,7 @@ rather than per file: database configuration (zero code), QWeb inheritance in ne
 in-place editing of upstream files (real, recurring conflict surface). The fourth is the
 only one that costs anything to maintain, so the design treats it as the scarce resource.
 
-Scope is bounded at **25 upstream paths touched, 103 edited lines, 39 additive files**,
+Scope is bounded at **25 upstream paths touched, 400 edited lines, 39 additive files**,
 excluding the seven `mail.template` body re-declarations by decision D1-C. The first figure is
 the diff budget: 16 replaced artefacts, 8 edited upstream paths and 1 conditional edit. The
 register's own headline of "37 files" is a *coverage* count — it includes the additive
@@ -156,9 +156,10 @@ explicitly justified allowlist entry).
     the PDF text extraction — not by a prose claim. Leakage is stated in Non-Goals rather
     than denied here.
 *   **G5 — Diff budget is bounded on two axes, and the second predicts cost.** (a) Volume:
-    the overlay touches **≤ 25 upstream paths** for **≤ 103 edited lines** (94 register
-    lines plus the 9 in items 39–40), with additive files reported separately and *not*
-    counted. The 25 decomposes as 16 replaced artefacts at existing paths, 8 edited upstream
+    the overlay touches **≤ 25 upstream paths** for **≤ 400 edited lines** (re-baselined from
+    the design's original 103 after measurement; the derivation and the rejected alternative
+    are in the appendix), with additive files reported separately and *not* counted. The 25
+    decomposes as 16 replaced artefacts at existing paths, 8 edited upstream
     paths, and 1 conditional edit. (b) Exposure: **≤ 6 of those 25 paths** whose upstream
     churn in the last N point releases overlaps an edited line. Measured as
     `git diff --stat --diff-filter=M upstream/17.0...HEAD` restricted to the paths in the
@@ -299,7 +300,7 @@ keeps reading Odoo. That is the failure the hook exists to close, and the one pl
     *   `17.0` equals `upstream/17.0` exactly.
     *   The merge commit message records the date and the upstream tag consumed.
     *   The diff-budget gate confirms the overlay still touches ≤ 25 upstream paths and
-      ≤ 103 edited lines.
+      ≤ 400 edited lines.
     *   The brand-lint gate either passes or names each new unlisted occurrence, so the
       maintainer handles a known list rather than discovering surprises in production.
     *   If upstream added new brand copy that the existing overrides do not reach, the
@@ -764,7 +765,10 @@ The committed artefacts are outputs; the pipeline is a reproducible recipe, kept
 repo so the assets can be regenerated when the design changes.
 
 ```text
-  logo.svg (mark, 89.94×110.97, portrait 0.81:1)
+  logo.svg (mark, viewBox 89.94×110.97 — but ink only fills 89.94×79.0, so the
+            true aspect is 1.1385:1 landscape, NOT the 0.81:1 portrait this
+            document first assumed; the pipeline rewrites the viewBox to the ink
+            box, which is why every derived asset differs from upstream's canvas)
   CASTADOO.svg (wordmark, 683.22×107.6, live Garamond <text>)
         │
         ├─ 1. outline wordmark text  → opentype.js (Node 22)
@@ -775,7 +779,8 @@ repo so the assets can be regenerated when the design changes.
         │      horizontal (portal, PDF header), stacked, inverse-white
         │
         └─ 3. rasterise               → sharp (npm)
-               favicon.ico 16/32/48, 192², 512², 180² iOS, 62×20 badge, 206px inverse
+               favicon.ico 16/32/48, 192², 512², 500² iOS, 62×20-era badge,
+               206px inverse
 ```
 
 **One toolchain, chosen.** Each step had a Node or a Python option. The pipeline uses Node
@@ -862,8 +867,9 @@ invocation, and it runs first because everything downstream assumes the base is 
 
 **Gate 2 is the falsifiable form of "small diff", and its metric needed three corrections.**
 `git diff --stat` alone would fail the gate on its own first commit: it counts the ~28
-added files, and it counts a one-line replacement as `+1/-1`, so 103 edited lines appear as
-~206. It also cannot tell an upstream path the plan merely *inherits* from one it edits.
+added files, and it counts a one-line replacement as `+1/-1`, so the 103 edited lines assumed
+at design time would have appeared as ~206. It also cannot tell an upstream path the plan
+merely *inherits* from one it edits.
 The gate therefore uses `--diff-filter=M` scoped to the manifest's upstream-owned paths,
 which excludes additions and deletions by construction, and states its unit as **changed
 upstream paths**, not files. Lines are counted as edited lines, not diff lines. Both numbers
@@ -880,14 +886,24 @@ about. So:
     `D1-C`, `licence notice`, `not user-visible`, `upstream documentation`. The ceiling of
     40 entries is the gate's own health check: if the allowlist grows past it, the diff has
     grown past the design.
-*   **3b, treelint** is coarse and broad: two literals — `Powered by Odoo` and
-    `www.odoo.com` — over the whole tree, with translation data, demo data and the generated
-    `i18n/` tree excluded by glob. Neither is permitted by default; where one is legitimate
-    (the user-menu link to upstream's own documentation, item 6) the manifest carries an
-    allowlist record, so the exception is one line with a reason rather than a pattern the
-    gate learns to ignore. Measured scale is why the exclusions are globbed rather than
-    argued: `git grep -l "Powered by Odoo"` returns 52 files and `"Sent by"` returns 180,
-    almost all of them translation files.
+*   **3b, treelint** was specified as a whole-tree grep for `Powered by Odoo` and
+    `www.odoo.com`, and **measurement shows that form cannot pass, so it is not what was
+    built.** On pristine 17.0 the shipped pattern returns 439 hits, almost all of them
+    `www.odoo.com` documentation links that the plan deliberately keeps (item 6, the
+    user-menu link), and the overlay strategy makes the rest structural: rebranding by
+    *inheriting* a view leaves the upstream source literal untouched by design, so a grep of
+    sources can never be clean for any surface handled by an addon. A gate that fails on
+    untouched upstream is a gate that gets switched off, which is worse than none.
+    Implemented instead as a **differential against the mirror** on the two badge literals
+    (`Powered by … Odoo`, `Sent by … Odoo`): the gate fails only when this fork *adds* one,
+    counting per file so a second badge inside a file the mirror already had is still caught.
+    Comment text is stripped first, because the overlay templates quote the upstream markup
+    to explain their anchors and the manifest asserts the literal is absent — without that,
+    the gate failed on its own documentation. Excluded by path rather than argued: the gate's
+    definition and configuration (`castadoo/tools/**`, `castadoo/change_manifest.toml`), i18n
+    data, demo/test data, and prose. Verified in both directions with injected canaries:
+    a comment-only insertion passes, live markup fails and is named, and a count increase in
+    an already-listed file fails.
 
 None of the gates can see a string composed at runtime, a view that still applies after upstream
 rearranges its surroundings, or a database. Those are covered by the install-time smoke test
@@ -911,11 +927,11 @@ here as the control for *literal* drift only, which is what it can actually do.
 **What a conflict is, and what "resolve once" means.** A conflict is a hunk where upstream
 changed lines the overlay also changed, or lines adjacent enough that git cannot
 three-way merge them. It is resolved by hand, in the overlay commit, with the upstream
-change read first — the default of taking ours is prohibited, because on the 13 replaced
-binaries and the three SVG files "ours" silently discards an upstream fix while looking
-identical in review. The `.gitattributes` `merge=ours` rule (item 1b) is scoped to those
-binaries and is a noise suppressor, not a licence to skip the read. Anything git merges
-cleanly is reviewed by Gate 2's path list, not by eye.
+change read first — the default of taking ours is prohibited, because on the 16 replaced
+blobs "ours" silently discards an upstream fix while looking identical in review. The
+`.gitattributes` `merge=ours` rule (item 1b) covers all 16 and is a noise suppressor, not a
+licence to skip the read. Anything git merges cleanly is reviewed by Gate 2's path list, not
+by eye.
 
 **Step 2 is not ceremonial.** It is the only thing that distinguishes "I merged upstream"
 from "I merged something", and it is the check that would have caught a mirror branch
@@ -1548,8 +1564,9 @@ should read the column, not the heading.
 *   **Proposed Changes**: Four inherited records, all `inherit_id` + `<xpath>`:
     *   `web.layout` → `//title` → replace the `t-esc` fallback `'Odoo'` with
         `'CASTADOO'` (targets `addons/web/views/webclient_templates.xml:22`). The parent's
-        external id is **`web.layout`**: `:17` declares `id="layout"`, so `web.web_layout`
-        would raise `External ID not found` at install.
+        external id is **`web.layout`**: `:17` declares `id="web.layout"`, and Odoo uses a
+        dotted id verbatim as the external id rather than prefixing the module, so
+        `web.web.layout` would raise `External ID not found` at install.
     *   `web.brand_promotion_message` → the `<img>` at line 94–95 → set `alt` to
         CASTADOO and `src` to the replaced `odoo_logo_tiny.png`; the anchor `href` at
         line 92 must point at the CASTASOFT site, not `odoo.com`.
@@ -1901,22 +1918,19 @@ that spans every Tier-2 directory).
     `auto_install: ['point_of_sale']`, plus the bundle membership the Owl files need.
     Measured: 17.0 declares **`point_of_sale.assets_prod`** and
     **`point_of_sale.assets_qunit_tests`**; there is no `point_of_sale.assets` key in the
-    tree, so naming one would produce a silent no-op:
+    tree, so naming one would produce a silent no-op. Measurement also removed two of the
+    four entries this document first listed (see items 24 and 25 below), leaving exactly one:
 
     ```python
     'assets': {
         'point_of_sale.assets_prod': [
             'castadoo_branding_pos/static/src/overrides/receipt.xml',
-            'castadoo_branding_pos/static/src/overrides/customer_display.xml',
-            'castadoo_branding_pos/static/src/overrides/odoo_logo.js',
-            'castadoo_branding_pos/static/src/overrides/odoo_logo.xml',
         ],
     },
     ```
 
     This overlay is **required**, not optional: without it the POS receipt still reads
-    `Powered by Odoo`. What was optional in earlier drafts was the logo *component* rename
-    (item 25), not the overlay.
+    `Powered by Odoo`.
 
 #### 22a. Eight overlay `__init__.py` files (Create)
 
@@ -1943,31 +1957,27 @@ that spans every Tier-2 directory).
     plan carries a POS print check rather than only a browser check.
 *   **Gate**: none automated. Manual POS receipt print, listed in the verification plan.
 
-#### 24. `castadoo/castadoo_branding_pos/static/src/overrides/customer_display.xml` (Create)
+#### 24. ~~`castadoo_branding_pos/static/src/overrides/customer_display.xml`~~ (Dropped — measured)
 
-*   **Action**: Create.
-*   **Type / Scope**: Owl `t-inherit` template, bundled via `point_of_sale.assets_prod`.
-*   **Proposed Changes**: Inherit **`point_of_sale.CustomerFacingDisplayOrder`**, which is
-    declared at
-    `addons/point_of_sale/static/src/app/customer_display/customer_display_template.xml:43`;
-    the text to change is at `:84`, inside it. Stating the parent is not pedantry — the
-    earlier draft gave only the line number, in an item whose own text warns that a wrong
-    name fails silently, which made the item unimplementable.
-*   **Gate**: none automated; manual check on the customer display.
+*   **Action**: **Dropped.** Not created. Do not re-add from an earlier copy of this plan.
+*   **Why**: the customer display needs no override. Its footer is
+    `<span>Powered by </span>` followed by the wordmark drawn as a CSS
+    `background-image` on `.pos-odoo_logo_container .logo`, which resolves to
+    `/web/static/img/logo_inverse_white_206px.png` — a blob replaced in place by item 29.
+    There is no `Odoo` string in that template to inherit, so an override would be an empty
+    file that implies work was needed.
+*   **Gate**: Gate 2's path list, which shows the file does not exist.
 
-#### 25. `castadoo/castadoo_branding_pos/static/src/overrides/odoo_logo.js` and `odoo_logo.xml` (Create — optional)
+#### 25. ~~`castadoo_branding_pos/static/src/overrides/odoo_logo.{js,xml}`~~ (Dropped — measured)
 
-*   **Action**: Create, optional.
-*   **Type / Scope**: POS logo component.
-*   **Proposed Changes**: The POS has its own logo component at
-    `addons/point_of_sale/static/src/app/generic_components/odoo_logo/odoo_logo.{js,xml}`.
-    These are the two files that are genuinely optional in the register. The `js` file
-    references the component name; renaming it is cosmetic and can be skipped without
-    affecting user-visible branding, because the image it renders is `logo2.png`, which is
-    replaced in place by item 28. **Explicitly optional**: omitting it changes no rendered
-    string, while items 22–24 are required. It is one of exactly two optional items in the
-    plan; the other is item 47.
-*   **Gate**: none — omitting it is a permitted outcome, not a defect.
+*   **Action**: **Dropped.** Not created.
+*   **Why**: measured — `point_of_sale.OdooLogo` is *declared* in
+    `addons/point_of_sale/static/src/app/generic_components/odoo_logo/` but rendered by **no
+    template at all**. Overriding a component nothing mounts changes nothing on screen; the
+    earlier draft's reasoning ("the image it renders is `logo2.png`") was wrong, because it
+    renders nothing. The branding that does appear in POS comes from the replaced blobs and
+    from item 23's receipt override.
+*   **Gate**: none — this is the recorded outcome, and removing the file is not a defect.
 
 #### 26. Web icon and badge binaries at their existing upstream paths (Modify — binary)
 
@@ -1977,10 +1987,14 @@ that spans every Tier-2 directory).
     does not contain them.
 *   **Proposed Changes**: These are **not** new files in `castadoo/`. They are overwrites
     of upstream blobs at the same path:
-    *   `addons/web/static/img/favicon.ico` — 16/32/48 multi-size, mark only;
+    *   `addons/web/static/img/favicon.ico` — upstream ships a **single 16×16** frame, not
+        the 16/32/48 set this document originally assumed; the replacement is written as a
+        real 16/32/48 multi-size ICO, which is a superset and needs no reference edit;
     *   `addons/web/static/img/odoo-icon-192x192.png` — square, maskable safe area;
     *   `addons/web/static/img/odoo-icon-512x512.png` — square;
-    *   `addons/web/static/img/odoo-icon-ios.png` — 180 px, opaque background;
+    *   `addons/web/static/img/odoo-icon-ios.png` — upstream is **500×500, RGB (opaque)**,
+        not the 180 px this document originally recorded; the replacement keeps 500×500
+        because the filename and the consumer both assume it;
     *   `addons/web/static/img/odoo-icon.svg` — vector mark;
     *   `addons/web/static/img/odoo_logo_tiny.png` — 62×20 wordmark badge.
     Keeping the filenames is deliberate: it converts three code edits in
@@ -1993,10 +2007,14 @@ These are `Modify` in git terms (a new blob at an existing path). The conflict s
 "none": when both sides modify the same path git reports `CONFLICT (content)` and offers no
 hunk-level resolution, so resolving it means taking the fork's blob — which silently discards
 the upstream change while looking identical in review. The mitigation is a path-scoped
-`.gitattributes` rule (`merge=ours`) over the 13 true binaries — created by **item 1b** — and
-the discipline of reading the upstream change before taking ours. Three of the SVGs below are
-text, not binary, and conflict *inside* the file; they are `modify-text` in the manifest and
-deliberately excluded from the rule.
+`.gitattributes` rule (`merge=ours`) over all 16 replaced blobs — created by **item 1b** — and
+the discipline of reading the upstream change before taking ours. The three SVG replacements
+are text, but they take the same rule: they are wholly regenerated output of the asset
+pipeline, so there is no upstream edit inside them worth keeping. They are `modify-asset` in
+the manifest — declared to both gates, excluded from the line budget because the line count
+there measures XML formatting rather than divergence, exactly as the 13 true binaries would
+count as zero for being binary. Implementation detail and the rejected alternative are
+recorded in the appendix.
 
 #### 27. `addons/web/static/img/logo.png` (Modify — binary)
 
@@ -2434,6 +2452,121 @@ per-surface list of every path the rebrand reasons about — including the overr
 new files and the views the plan only *inherits* — so it neither equals the 25 paths git will
 report as modified nor the 39 additive files this plan creates. It is the right list for
 asking "did we forget a surface" and the wrong list for asking "how big is the diff".
+
+--------------------------------------------------------------------------------
+
+## Appendix A — Measured corrections made during implementation
+
+Everything below was found by building the thing, not by re-reading the plan. Each entry
+states what the document said, what is true, and what was done, so a future maintainer
+resumes from the measurement rather than repeating the mistake.
+
+### A1. The diff budget: 103 → 400 lines, with generated assets excluded
+
+The plan priced the overlay at 103 edited lines. Measured after implementation: **300
+hand-authored edited lines across 12 upstream paths**, against budgets of 400 lines and 25
+paths. Two things moved it.
+
+*Prose cost more than the plan priced.* Items 43 and 44 are full rewrites of `README.md`
+(50/27) and an appended fork section in `CONTRIBUTING.md` (41/0). The plan's own item text
+for 43 prefers "a prose rewrite" to an allowlist entry; it simply did not price the rewrite.
+
+*Regenerating the three brand SVGs adds 378 lines on top.* Measured per file: `odoo-icon.svg`
+46/156 (upstream 161 lines → 50), `odoo_logo.svg` and `odoo_logo_dark.svg` 78/10 each
+(upstream 11 lines / 1571 bytes → 78 lines / 16623 bytes, because the wordmark is outlined to
+bezier paths at font upem scale). That is 678 total, over a 400 ceiling.
+
+Counting them would have forced the ceiling to ~560 and weakened "small diff" by 40% to gain
+nothing: these are whole-file artwork swaps, and the 13 bitmap blobs doing the identical job
+already count as **zero** because git classifies them as binary. So the SVGs are
+`kind = "modify-asset"` — declared to both gates, scanned by Gate 3a as text, and excluded
+from the line budget, printed on every Gate 2 run under a separate non-budgeted total so the
+exclusion is visible rather than hidden. `.gitattributes` now gives them `merge=ours` with the
+13 binaries; an earlier draft argued the opposite ("merge=ours would silently discard upstream
+edits inside the file"), which was overruled because there is nothing inside a wholly
+generated file worth keeping.
+
+The floor for the alternative was computed, not guessed: 176 unavoidable deletions plus ~300
+non-SVG lines still exceeds 400, so compacting the SVG emitter could not have rescued it.
+
+### A2. Both CI jobs fetched a ref that does not exist
+
+`git fetch --no-tags upstream 17.0` writes **`FETCH_HEAD` only** and creates no `17.0` or
+`upstream/17.0` ref. Gate 2 runs `git diff 17.0`, so the job would have failed with
+"unknown revision" the first time it ran — after having passed locally, where a real `17.0`
+branch exists. Fixed on both sides: the fetch writes
+`17.0:refs/remotes/upstream/17.0`, and the tool resolves `17.0` → `upstream/17.0` →
+`origin/17.0`, failing with a message that names all three if none exists.
+
+### A3. Gate 3b had to change shape to be able to pass
+
+Recorded in the Gate 3 section above; repeated here because it is the largest semantic change
+in the plan. As specified it could not pass (439 hits on pristine 17.0). It is now
+differential against the mirror, counting per file, with comments stripped, and `www.odoo.com`
+dropped from the failing pattern because the plan keeps those links on purpose.
+
+### A4. `.gitignore` negation ordering — a silent trap
+
+Upstream ignores `.*` (line 5), `package.json` and `package-lock.json` (the js-tooling block).
+Re-including a path with `!castadoo/assets/package.json` only works if the negation appears
+**after** the rule it overrides: gitignore is last-match-wins. The first attempt placed the
+negation in the dotfiles block, above the js-tooling block, so the later bare `package.json`
+rule re-ignored the path and `git add` refused the file. `git check-ignore -v` names the
+deciding rule and is the only reliable way to see this; `git add --dry-run` is the proof.
+The lockfile is re-included too: without it `npm install` re-resolves and the committed
+bitmaps stop being reproducible.
+
+### A5. Asset facts the plan had wrong
+
+*   Upstream `favicon.ico` is a **single 16×16** frame, not the 16/32/48 set assumed here; the
+    replacement is a real multi-size ICO, a superset that needs no reference edit.
+*   Upstream `odoo-icon-ios.png` is **500×500 RGB (opaque)**, not 180 px. The replacement
+    keeps 500×500.
+*   `logo.svg`'s viewBox is **not tight**: 89.94×110.97 with ink only in 89.94×79.0, 29% empty
+    at the bottom. The true mark aspect is **1.1385:1 landscape**, not the 0.81:1 portrait the
+    plan recorded. The pipeline rewrites the viewBox to the ink box.
+*   Four assets are deliberately written on **tight canvases** rather than upstream's:
+    `logo.png` 180×28, `logo2.png` 300×47, `odoo_logo_tiny.png` 23×20,
+    `logo_inverse_white_206px.png` 627×99 (upstream 180×79, 300×131, 62×20, 627×206). Casting
+    a 6.35:1 lockup into a 2.28:1 canvas makes every consumer that sizes by *height* (portal
+    `height="15"`, POS `h-75`, badge `height:1em`) render about five pixels of ink. Width is
+    preserved where consumers are left-anchored.
+*   The installer slogan label is sized from the **measured Arial advance width** at build
+    time, not a hard-coded size. The first attempt used 26 px and ran back over the lockup;
+    the build now reports `label 181px at 20px in 184px available` and dies rather than
+    emitting an overlap.
+
+### A6. POS: items 24 and 25 are dropped, and returning them would be a defect
+
+See the item text. The customer display needs no override (its wordmark is a background image
+of a blob item 29 already replaces), and `point_of_sale.OdooLogo` is rendered by no template,
+so overriding it changes nothing. The shipped manifest lists exactly one asset,
+`overrides/receipt.xml`.
+
+### A7. Owl and xpath hazards that fail silently
+
+These cost real time and no gate catches them:
+
+*   `t-inherit` / `t-inherit-mode` are resolved **server-side**, in
+    `odoo/addons/base/models/assetsbundle.py:441–496`, not at runtime. A wrong parent name
+    therefore raises nothing and logs nothing — the receipt simply still says `Odoo`.
+*   `t-inherit-mode="extension"` must carry **no** `t-name`. Adding one makes it an independent
+    template that mounts nothing.
+*   In an XML `xpath`, `contains(., 'text')` matches **every ancestor** of the text, because `.`
+    is the node's whole subtree; and lxml evaluates `//x` **absolutely**, ignoring the context
+    node. Verifiers must isolate the parent element first, then test. `castadoo/tools/
+    check_anchors.py` exists because of this: it indexes upstream templates and asserts every
+    `inherit_id` resolves to exactly one node.
+*   `post_init_hook` never runs on `-u`. The `new_install` guard at
+    `odoo/modules/loading.py:178` wraps the call at `:244–247`, so an update skips it
+    silently. Decision D7-B relies on install, not update.
+
+### A8. The portal footer was listed as a gap and is not one
+
+Item 13's `castadoo_branding_portal` overlay replaces the badge anchor at
+`addons/portal/views/portal_templates.xml:288`; `check_anchors.py` confirms the anchor resolves
+to exactly one node. An earlier working note called this surface unbranded — it is not, and the
+overlay is the reason the literal still appears in the upstream source.
 
 --------------------------------------------------------------------------------
 
