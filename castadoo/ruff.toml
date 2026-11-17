@@ -1,0 +1,45 @@
+# ruff configuration for the CASTADOO addon tree only.
+#
+# This is a NESTED config: ruff applies the nearest ruff.toml to each file, so
+# everything outside castadoo/ still uses the repository-root ruff.toml
+# unchanged. That matters for the fork's central promise - upstream owns the
+# root config, and a rebrand must not edit it - so this file is additive.
+#
+# Three rules from the root selection are switched off here, all of them because
+# the code they fire on is intentional rather than sloppy:
+
+[lint]
+# extend-ignore, NOT ignore: `ignore` would REPLACE the root list and silently
+# re-enable every rule upstream had switched off. Verified that distinction
+# matters - the first attempt used `ignore` and produced 20 findings in files
+# that are clean under the root config.
+extend-ignore = [
+    # T201 print. castadoo/tools/* are command-line checkers whose entire output
+    # IS the report; the root config targets library code. Suppressing it once,
+    # here, beats bracketing 68 call sites in noqa or pretending the tools are a
+    # different kind of program than they are.
+    "T201",
+
+    # PLW1510 subprocess.run without check=. Every call site deliberately
+    # inspects returncode: `git grep` uses exit 1 for "no matches" (not an
+    # error), and makensis uses it for "build failed". check=True would turn
+    # both into exceptions and destroy the distinction the tools depend on.
+    "PLW1510",
+
+    # ISC004 unparenthesized implicit concatenation in a collection. Used to
+    # keep two long Windows paths on separate lines without a 200-column line.
+    "ISC004",
+]
+
+[lint.per-file-ignores]
+# Odoo manifests are a bare dict literal at module level - that is the platform's
+# own convention, and `addons/*/__manifest__.py` in pristine 17.0 trips the same
+# useless-expression rule. Upstream's ruff run covers core only, never addons,
+# which is why the rule survives in the root config at all.
+"**/__manifest__.py" = [
+    "B018",       # useless-expression
+]
+# __init__.py files re-export the hooks module so the post_init_hook is loadable.
+"**/__init__.py" = [
+    "F401",       # unused-import (also ignored at root)
+]

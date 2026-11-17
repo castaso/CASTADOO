@@ -74,7 +74,7 @@ def index_parents() -> None:
             continue
         try:
             tree = etree.parse(
-                str(path), parser=etree.XMLParser(recover=True, ns_clean=True)
+                str(path), parser=etree.XMLParser(recover=True, ns_clean=True),
             )
         except etree.XMLSyntaxError:
             continue
@@ -155,13 +155,13 @@ def main() -> int:
                 if len(nodes) != 1:
                     problems.append(
                         f"{rel} [{pos}] {expr} -> {len(nodes)} matches "
-                        f"(parent {inherit})"
+                        f"(parent {inherit})",
                     )
                     print(f"  {rel} [{pos}] {len(nodes)} MATCHES {expr}")
             if seen_here:
                 print(
                     f"  ok  {rel} -> {inherit} "
-                    f"({ppath.relative_to(ROOT)}), {seen_here} xpath"
+                    f"({ppath.relative_to(ROOT)}), {seen_here} xpath",
                 )
 
     print(f"\nchecked {total} xpath expressions across {len(files)} files")

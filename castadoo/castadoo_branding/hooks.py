@@ -37,7 +37,7 @@ def post_init_hook(env):
     """
     Module = env['ir.module.module']
     installed = set(
-        Module.search([('state', '=', 'installed')]).mapped('name')
+        Module.search([('state', '=', 'installed')]).mapped('name'),
     )
     to_install = Module.browse()
     for target, overlay in _OVERLAYS.items():

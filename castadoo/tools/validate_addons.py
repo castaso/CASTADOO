@@ -15,10 +15,13 @@ Run from anywhere; paths resolve from this file.
 from __future__ import annotations
 
 import ast
+import logging
 import re
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
+log = logging.getLogger("castadoo.validate_addons")
 
 ROOT = Path(__file__).resolve().parents[2]
 TREE = ROOT / "castadoo"
@@ -84,7 +87,7 @@ def check_addon(addon: Path, m: dict) -> None:
         if target not in (m.get("depends") or []):
             problems.append(
                 f"{name}: auto_install names {target!r} but depends does not "
-                f"include it, so the overlay can never activate"
+                f"include it, so the overlay can never activate",
             )
         if target == BASE:
             problems.append(f"{name}: auto_install must not name {BASE}")
@@ -127,7 +130,12 @@ def main() -> int:
         for mf in manifests:
             try:
                 m = load_manifest(mf)
-            except Exception:  # noqa: BLE001 - already reported above
+            except Exception as exc:  # noqa: BLE001 - reported once, with its path
+                # The syntax pass above already failed loudly on this file; this
+                # pass only needs to not crash twice. Logging at debug keeps the
+                # exception visible to someone diagnosing the run, which is what
+                # the rule asks for, without duplicating the error output.
+                log.debug("skipping unparsable manifest %s: %s", mf, exc)
                 continue
             ai = m.get("auto_install")
             if mf.parent.name != BASE and isinstance(ai, list) and len(ai) == 1:
@@ -137,7 +145,7 @@ def main() -> int:
             only_manifest = {k: v for k, v in declared.items() if table.get(k) != v}
             problems.append(
                 "hooks.py _OVERLAYS disagrees with the manifests: "
-                f"hooks-only={only_hooks} manifest-only={only_manifest}"
+                f"hooks-only={only_hooks} manifest-only={only_manifest}",
             )
         else:
             print(f"hooks table matches {len(table)} overlay manifests")

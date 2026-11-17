@@ -118,3 +118,29 @@ jobs:
         run: |
           pip install ruff
           ruff check castadoo/
+
+  installer-verify:
+    name: Windows installer (compiled)
+    runs-on: ubuntu-latest
+    needs: gate-1-mirror-identity
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      # setup.nsi is the largest file this fork edits and the one surface where a
+      # mistake is silent: a wrong !define still produces a working installer
+      # that brands the wrong thing. Reading the diff does not establish that it
+      # compiles, so compile it.
+      #
+      # The tool stubs the four third-party plugins upstream provisions but does
+      # not vendor, and retargets two posbox SSL File lines that point at
+      # odoo/addons/point_of_sale - a path that does not exist in a 17.0
+      # checkout, upstream or fork. Both are reported; the real file is never
+      # modified. It then asserts the RESOLVED identity from the preprocessor
+      # output: Add/Remove key is CASTADOO, the legacy Odoo key is still read and
+      # deleted, and the frozen service/config identities are unchanged.
+      - name: Install makensis
+        run: sudo apt-get update && sudo apt-get install -y nsis
+      - name: Compile and assert installer identity
+        run: python castadoo/tools/verify_installer.py

@@ -339,6 +339,15 @@ note = "Manual, because Owl t-inherit fails SILENTLY on a wrong parent name: no 
 tier = "B"
 target = "Windows installer on a clean VM"
 expect = "publisher reads CASTASOFT; Add/Remove key is 'CASTADOO 17.0'; service name is still odoo-server-17.0; uninstall removes the key"
+note = """
+Still Tier B, because only a VM proves the installer RUNS and that uninstall
+removes the key. The compile-time half is now automated and no longer waits for
+a VM: castadoo/tools/verify_installer.py compiles setup.nsi with makensis and
+asserts the resolved identity from the preprocessor output (Add/Remove key,
+publisher, legacy-key read and delete, frozen service/config names, no
+unsubstituted defines). What the VM adds is execution: the registry is actually
+written, the service actually starts, and uninstall actually cleans up.
+"""
 
 [[assertion]]
 tier = "B"

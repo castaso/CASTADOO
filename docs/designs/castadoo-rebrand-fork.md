@@ -2568,6 +2568,60 @@ Item 13's `castadoo_branding_portal` overlay replaces the badge anchor at
 to exactly one node. An earlier working note called this surface unbranded — it is not, and the
 overlay is the reason the literal still appears in the upstream source.
 
+### A9. The installer is now compiled, not read
+
+The plan verified the installer by reading it. That was the wrong instrument: `setup.nsi` is
+the largest file the fork edits (92/49) and the one surface where a mistake is **silent** — a
+wrong `!define` still produces a working installer that brands the wrong thing, and no gate in
+the plan would notice. `makensis` is not in a normal checkout, so this had never been compiled.
+
+`castadoo/tools/verify_installer.py` now compiles it and asserts the resolved identity from
+makensis's own preprocessor output. Measured result: **compiles clean** (9 pages, 6 sections,
+1552 instructions, 564 strings) and **13/13 identity checks pass** — Add/Remove key
+`CASTADOO 17.0` with publisher `CASTASOFT`, legacy `Odoo 17.0` key still *read* as a fallback
+and *deleted* when it points at the same `$INSTDIR`, and every frozen identity intact
+(`odoo-server-17.0` ×8, `Odoo Server 17.0`, `odoo.conf` ×14, `odoo-bin`, `odoo.log`,
+`PostgreSQL_For_Odoo`, and none of the 43 defines left unsubstituted). Verified in both
+directions: reverting `PUBLISHER` to `Odoo S.A.`, or illegally renaming `SERVICENAME`, each
+fails the specific check that covers it.
+
+Three obstacles had to be cleared, and all three are reported by the tool rather than hidden:
+
+*   **Four third-party plugins are not vendored** (`Nsis7z`, `AccessControl`, `NScurl`,
+    `nsisunz`). Odoo's own build provisions them; they are absent from any checkout. The tool
+    stubs those six call sites in a scratch copy.
+*   **Two `File` lines point at a path that does not exist.** They reference
+    `..\..\odoo\addons\point_of_sale\tools\posbox\overwrite_after_init\etc\ssl\...`, i.e.
+    `<repo>/odoo/addons/point_of_sale`, but in 17.0 it lives at the top-level `addons/`.
+    Byte-identical to pristine 17.0, so this is **upstream breakage, not the fork's** — Odoo's
+    real build stages the tree differently. The tool retargets them in the scratch copy.
+*   **NSIS compresses its string table**, and `setup.nsi` declares no `VIAddVersionKey`, so
+    scanning the built EXE finds neither the brand strings nor any version info. That is why
+    the assertions run against the preprocessor output: it is the only place where
+    `${PRODUCT_NAME}` and `${REGISTRY_KEY}` are already substituted.
+
+The real `setup.nsi` is never modified by the tool — it copies to a scratch directory, and
+both canary runs confirmed the file returns byte-identical.
+
+### A10. ruff: a nested config, because upstream lints core only
+
+`ruff check castadoo/` failed with 81 findings, and this was a **pre-existing** CI failure, not
+something the new code introduced. The cause is scope: upstream's `ruff.toml` selects a wide
+rule set, but upstream runs ruff over **core only, never addons**. So a normal Odoo addon trips
+rules the root config never encounters — pristine `addons/mail/__manifest__.py` fails the same
+`useless-expression` rule on its bare manifest dict.
+
+Rather than edit the root `ruff.toml` (upstream owns it, and the fork's promise is a small
+diff), `castadoo/ruff.toml` is **nested**: ruff applies the nearest config per file, so
+everything outside `castadoo/` keeps the root behaviour untouched. It uses `extend-ignore`, not
+`ignore` — the first attempt used `ignore` and thereby *replaced* the root list, silently
+re-enabling every rule upstream had switched off (20 findings in files that are clean under the
+root config). The four genuine findings in the tools were fixed in code, not suppressed: two
+`re.S`/`re.M` aliases, one `%`-format, and one bare `except: continue` that now logs at debug
+with the offending manifest path.
+
+`ruff check castadoo/` is clean, and `ruff.toml` at the root is unmodified.
+
 --------------------------------------------------------------------------------
 
 <!-- Provenance: Indicates initial structural drafting via EGM. -->

@@ -83,7 +83,7 @@ def base_ref() -> str:
         "cannot find a mirror ref; tried "
         + ", ".join(BASE_REF_CANDIDATES)
         + ". In CI, fetch with an explicit refspec: "
-        "git fetch --no-tags upstream 17.0:refs/remotes/upstream/17.0"
+        "git fetch --no-tags upstream 17.0:refs/remotes/upstream/17.0",
     )
 
 
@@ -202,7 +202,7 @@ def cmd_measure() -> int:
             continue
         permit = allowed.get(path, set())
         extra = [h for h in hits if h not in permit]
-        print(f"  {path}: {len(hits)} hit line(s), {len(extra)} unlisted {extra if extra else ''}")
+        print(f"  {path}: {len(hits)} hit line(s), {len(extra)} unlisted {extra or ''}")
         if extra:
             ok = False
 
@@ -237,7 +237,7 @@ def cmd_render() -> int:
         note = "" if c.get("counts_against_budget") is not False else " (not budgeted)"
         lines.append(
             f"| `{c['path']}` | {c['kind']} | {c.get('surface', '')} | "
-            f"{c.get('conflict_surface', '')} | {a}/{d}{note} |"
+            f"{c.get('conflict_surface', '')} | {a}/{d}{note} |",
         )
 
     lines += ["", "## Configuration values (invisible to Gates 2 and 3)", "",
@@ -245,7 +245,7 @@ def cmd_render() -> int:
     for s in manifest.get("setting", []):
         lines.append(
             f"| `{s['key']}` | `{s['model']}` | {s['supplied_by']} | "
-            f"{s.get('overlay') or '-'} | {s.get('assertion', '')} |"
+            f"{s.get('overlay') or '-'} | {s.get('assertion', '')} |",
         )
     lines += ["", "## Allowlist", "", "| Path | Lines | Reason |", "|---|---|---|"]
     for a in manifest.get("allowlist", []):
@@ -270,7 +270,7 @@ def strip_comments(text: str, suffix: str) -> str:
     manifest asserts the literal is absent. Those are not badges.
     """
     if suffix in (".xml", ".html", ".svg", ".qweb"):
-        return re.sub(r"<!--.*?-->", "", text, flags=re.S)
+        return re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL)
     if suffix in (".py", ".toml", ".js", ".mjs"):
         return "\n".join(
             ln for ln in text.splitlines() if not ln.lstrip().startswith("#")
